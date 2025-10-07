@@ -1,42 +1,31 @@
-pipeline{
+pipeline {
     agent any
-    stages{
-        stage('checkout the code from github'){
-            steps{
-                 git url: 'https://github.com/chandrukandagallu/chandru.git'
-                 echo 'github url checkout'
+
+    stages {
+        stage('Checkout SCM') {
+            steps {
+                // Only one git checkout
+                git branch: 'main', url: 'https://github.com/chandrukandagallu/banking-java-project.git'
             }
         }
-        stage('codecompile with akshat'){
-            steps{
-                echo 'starting compiling'
-                sh 'mvn compile'
+
+        stage('Build') {
+            steps {
+                sh './mvnw clean package'
             }
         }
-        stage('codetesting with akshat'){
-            steps{
-                sh 'mvn test'
+
+        stage('Docker Build & Run') {
+            steps {
+                sh 'docker build -t banking-app .'
+                sh 'docker run -d -p 8080:8080 banking-app'
             }
         }
-        stage('qa with akshat'){
-            steps{
-                sh 'mvn checkstyle:checkstyle'
+
+        stage('Expose Port') {
+            steps {
+                echo 'Application is running on port 8080'
             }
         }
-        stage('package with akshat'){
-            steps{
-                sh 'mvn package'
-            }
-        }
-        stage('run dockerfile'){
-          steps{
-               sh 'docker build -t myimg .'
-           }
-         }
-        stage('port expose'){
-            steps{
-                sh 'docker run -dt -p 8091:8091 --name c000 myimg'
-            }
-        }   
     }
 }
